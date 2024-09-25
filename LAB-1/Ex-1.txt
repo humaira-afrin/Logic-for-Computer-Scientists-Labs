@@ -4,3 +4,14 @@ Vilka bindningar presenteras som resultat?
 Ge en kortfattad förklaring till ditt svar!
 
 Svar: 
+
+Resultatet blir: 
+T = f(a,a,b),
+X = Y, Y = a,
+Z = b.  
+
+Förklaring: 
+Bindningarna som presenteras fås genom att jämföra uttrycken/strukterna T=f(a,Y,Z) och T=f(X,X,b). Vi försöker liksom likställa dem. 
+Första delen ger oss att: X=a. 
+Andra ger oss att: Y=a och därmed att X=Y
+Tredje termen ger oss att: Z= b
