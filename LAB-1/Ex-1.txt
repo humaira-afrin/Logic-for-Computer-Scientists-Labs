@@ -1,0 +1,6 @@
+Betrakta denna fråga till ett Prologsystem:
+?- T=f(a,Y,Z), T=f(X,X,b).
+Vilka bindningar presenteras som resultat?
+Ge en kortfattad förklaring till ditt svar!
+
+Svar: 
