@@ -7,6 +7,8 @@ granne(f,a).
 granne(c,g).
 granne(g,i).
 
+granne1(A,X):- granne(A,X); granne(X,A).
 
-granne1(A):-(granne(A,X);
-granne(X,A)), write(X).
+path(A, A, _, [A]).
+path(A, B, Acc, [A|T]) :- granne1(A, X),\+ memberchk(X, Acc),         
+    path(X, B, [X|Acc], T).     
