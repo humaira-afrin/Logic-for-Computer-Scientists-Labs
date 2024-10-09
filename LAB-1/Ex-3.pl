@@ -1,5 +1,11 @@
 % Predikat som givet en lista genererar en lista F med längd L som man finner konsekutivt i första listan
 % F är dellista och L är längden på dellistan
+
+append([],L,L).
+append([H|T],L,[H|R]) :- append(T,L,R).
+length1([],0).
+length1([_|T],N) :- length1(T,N1), N is N1+1.
+
 partstring(List, L, F) :-
     % SubList blir alltså List fast med olika startpunkter
     append(_,SubList, List),
@@ -10,7 +16,7 @@ partstring(List, L, F) :-
     % Man får alla mojliga konsekutiva substrings då SubList börjar vid olika punkter 
     append(F, _, SubList), 
     % Printar längden på F
-    length(F,L).
+    length1(F,L).
 
 % Förklaring:
 % Sublist= abcd
