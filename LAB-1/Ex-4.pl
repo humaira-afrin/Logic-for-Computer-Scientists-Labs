@@ -1,3 +1,7 @@
+select(X,[X|T],T).
+select(X,[Y|T],[Y|R]) :- select(X,T,R).
+memberchk(X,L) :- select(X,L,_), !.
+
 granne(a,b).
 granne(b,c).
 granne(c,d).
