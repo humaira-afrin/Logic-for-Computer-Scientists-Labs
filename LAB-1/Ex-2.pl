@@ -1,8 +1,8 @@
-% Definition of a list
-list([]).
-list([H|T]) :- list(T).      
+select(X,[X|T],T).
+select(X,[Y|T],[Y|R]) :- select(X,T,R).
+memberchk(X,L) :- select(X,L,_), !.  
 
-% main 
+% main predikat (arity 2)
 remove_duplicates(Input, Out):- remove_duplicates1(Input,[],Out).
 
 % Base 
