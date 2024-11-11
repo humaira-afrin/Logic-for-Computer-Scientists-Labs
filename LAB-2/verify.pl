@@ -1,3 +1,10 @@
+% Från instruktion
+verify(InputFileName) :- see(InputFileName),
+    read(Prems), read(Goal), read(Proof),
+    seen,
+    valid_proof(Prems, Goal, Proof).
+
+
 % R E G L E R
 % X och Y är step numbers och predikate följer tsrukturen 
 % rule(Regel, Premises, Bevisat, conclusion)
