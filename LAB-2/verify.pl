@@ -8,18 +8,26 @@ verify(InputFileName) :- see(InputFileName),
 valid_proof(Prems, Goal, Proof) :- 
     helper(Prems, Goal, Proof, []).
 
-helper(Prems, Goal, [[Num, Step, Rule] | Rest], Bevisat) :-
-        rule(Rule, Prems, Bevisat, Step),
-        helper(Prems, Goal, Rest, [[Num, Step, Rule] | Bevisat]).
-    
-helper(Prems, Goal, [[_, Goal, Rule]], Bevisat):-  rule(Rule, Prems, Bevisat, Goal). 
-    
-%  Assumption
-helper(Prems, Goal, [Del|RestSteps], Bevisat)
-   :- Del = [FirstLine|RestOfSection],
-      FirstLine = [_, _, assumption],
-      (RestOfSection = [] ; helper(Prems, _, RestOfSection, [FirstLine|Bevisat])),
-     helper(Prems, Goal, RestSteps, [Del|Bevisat]).
+helper(Prems, Goal, [[Num, Step, Rule] | Rest], Bevisat) :- 
+    rule(Rule, Prems, Bevisat, Step),
+    append([[Num, Step, Rule]], Bevisat, UpdatedBevisat),
+    helper(Prems, Goal, Rest, UpdatedBevisat).
+
+helper(Prems, Goal, [[_, Goal, Rule]], Bevisat):-  
+    rule(Rule, Prems, Bevisat, Goal). % sista
+
+% Assumption
+helper(Prems, Goal, [Del | RestSteps], Bevisat) :-
+    Del = [FirstLine | RestOfSection],
+    FirstLine = [_, _, assumption],
+    % box börjar
+    (RestOfSection = [] ; 
+     append([FirstLine], Bevisat, TempBevisat),
+     helper(Prems, _, RestOfSection, TempBevisat)),% box slutar
+    append([Del], Bevisat, UpdatedBevisat),
+    helper(Prems, Goal, RestSteps, UpdatedBevisat).
+
+
 
 
 
@@ -52,7 +60,7 @@ rule(negel(X, Y), _, Bevisat, motsagelse) :-
 box(Start, End, Bevisat) :- 
     member(Z, Bevisat),
     append([Start], _, Z), 
-    append(_, [End], Z).
+    append(_, [End], Z). 
 
 % ¬i (A (assumption),....⊥ |- ¬A)
 rule(negint(X, Y), _, Bevisat, neg(A)) :- 
@@ -108,3 +116,4 @@ rule(orel(I, II, III, IV, V), _, Bevisat, A) :-
     member([I, or(B, C), _], Bevisat),
     box([II, B, assumption], [III, A, _], Bevisat),
     box([IV, C, assumption], [V, A, _], Bevisat).
+
