@@ -1,4 +1,3 @@
-:- discontiguous helper/4.
 
 verify(InputFileName) :- 
     see(InputFileName),
@@ -7,157 +6,132 @@ verify(InputFileName) :-
     valid_proof(Prems, Goal, Proof).
 
 valid_proof(Prems, Goal, Proof) :- 
-    helper(Prems, Goal, Proof, []),
-    last(Proof, [_, Goal, _]), !.
+    checker(Prems, Goal, Proof, []).
 
-helper(Prems, Goal, [Del | RestSteps], Bevisat) :-
-    Del = [FirstLine | RestOfSection],
-    FirstLine = [_, _, assumption],
-    % Box handling starts here
-    (RestOfSection = [] ; 
-     append([FirstLine], Bevisat, TempBevisat),
-     helper(Prems, _, RestOfSection, TempBevisat)), % Box ends here
-    append([Del], Bevisat, UpdatedBevisat),
-    helper(Prems, Goal, RestSteps, UpdatedBevisat).
 
-% Helper rules without singleton variables, using just Bevisat and relevant data
-helper(Prems, Goal, [[Num, Step, Rule] | Rest], Bevisat) :- 
-    (premise_rule(Prems, Rule, Bevisat, Step) ;
-     andint(Prems, Rule, Bevisat, Step) ;
-     andel1(Prems, Rule, Bevisat, Step) ;
-     andel2(Prems, Rule, Bevisat, Step) ;
-     negel(Prems, Rule, Bevisat, Step) ;
-     negint(Prems, Rule, Bevisat, Step) ;
-     contel(Prems, Rule, Bevisat, Step) ;
-     neg_neg_int(Prems, Rule, Bevisat, Step) ;
-     neg_neg_el(Prems, Rule, Bevisat, Step) ;
-     copy(Prems, Rule, Bevisat, Step) ;
-     mt(Prems, Rule, Bevisat, Step) ;
-     pbc(Prems, Rule, Bevisat, Step) ;
-     lem(Prems, Rule, Bevisat, Step) ;
-     impint(Prems, Rule, Bevisat, Step) ;
-     impel(Prems, Rule, Bevisat, Step) ;
-     orint1(Prems, Rule, Bevisat, Step) ;
-     orint2(Prems, Rule, Bevisat, Step) ;
-     orel(Prems, Rule, Bevisat, Step)),
-    append([[Num, Step, Rule]], Bevisat, UpdatedBevisat),
-    helper(Prems, Goal, Rest, UpdatedBevisat).
+% assumption box
+ checker(Prems, _, [[H | T] | Rest], Proven) :-
+    H = [_, _, assumption],  
+    (T = [] ; append([H], Proven, TempProven), checker(Prems, _, T, TempProven)  
+    ),
+    append([[H | T] | Rest], Proven, UpdatedProven), 
+    checker(Prems, _, Rest, UpdatedProven).  
+  
+% checker calls the predicate for the rules and add it to the a new accumulator and recursively continues with the rest of the steps
+checker(Prems, Goal, [[Num, Step, Rule] | Rest], Proven) :- 
+    (premise_rule(Prems, Rule, Proven, Step) ; andint(Prems, Rule, Proven, Step) ; andel1(Prems, Rule, Proven, Step) ;
+    andel2(Prems, Rule, Proven, Step) ; negel(Prems, Rule, Proven, Step) ; negint(Prems, Rule, Proven, Step) ;
+    contel(Prems, Rule, Proven, Step) ; neg_neg_int(Prems, Rule, Proven, Step) ; neg_neg_el(Prems, Rule, Proven, Step) ;
+    copy(Prems, Rule, Proven, Step) ; mt(Prems, Rule, Proven, Step) ; pbc(Prems, Rule, Proven, Step) ;
+     lem(Prems, Rule, Proven, Step) ; impint(Prems, Rule, Proven, Step) ;  impel(Prems, Rule, Proven, Step) ;
+     orint1(Prems, Rule, Proven, Step) ; orint2(Prems, Rule, Proven, Step) ;orel(Prems, Rule, Proven, Step)),
+    append([[Num, Step, Rule]], Proven, UpdatedProven),
+    checker(Prems, Goal, Rest, UpdatedProven).
 
-helper(Prems, Goal, [[_, Goal, Rule]], Bevisat):-  
-    (premise_rule(Prems, Rule, Bevisat, Goal) ;
-     andint(Prems, Rule, Bevisat, Goal) ;
-     andel1(Prems, Rule, Bevisat, Goal) ;
-     andel2(Prems, Rule, Bevisat, Goal) ;
-     negel(Prems, Rule, Bevisat, Goal) ;
-     negint(Prems, Rule, Bevisat, Goal) ;
-     contel(Prems, Rule, Bevisat, Goal) ;
-     neg_neg_int(Prems, Rule, Bevisat, Goal) ;
-     neg_neg_el(Prems, Rule, Bevisat, Goal) ;
-     copy(Prems, Rule, Bevisat, Goal) ;
-     mt(Prems, Rule, Bevisat, Goal) ;
-     pbc(Prems, Rule, Bevisat, Goal) ;
-     lem(Prems, Rule, Bevisat, Goal) ;
-     impint(Prems, Rule, Bevisat, Goal) ;
-     impel(Prems, Rule, Bevisat, Goal) ;
-     orint1(Prems, Rule, Bevisat, Goal) ;
-     orint2(Prems, Rule, Bevisat, Goal) ;
-     orel(Prems, Rule, Bevisat, Goal)).
+% this is the last line of the steps, only checks the rules 
+checker(Prems, Goal, [[_, Goal, Rule]], Proven):-  
+    (premise_rule(Prems, Rule, Proven, Goal) ;
+     andint(_, Rule, Proven, Goal) ;
+     andel1(_, Rule, Proven, Goal) ;
+     andel2(_, Rule, Proven, Goal) ;
+     negel(_, Rule, Proven, Goal) ;
+     negint(_, Rule, Proven, Goal) ;
+     contel(_, Rule, Proven, Goal) ;
+     neg_neg_int(_, Rule, Proven, Goal) ;
+     neg_neg_el(_, Rule, Proven, Goal) ;
+     copy(_, Rule, Proven, Goal) ;
+     mt(_, Rule, Proven, Goal) ;
+     pbc(_, Rule, Proven, Goal) ;
+     lem(_, Rule, _, Goal) ;
+     impint(_, Rule, Proven, Goal) ;
+     impel(_, Rule, Proven, Goal) ;
+     orint1(_, Rule, Proven, Goal) ;
+     orint2(_, Rule, Proven, Goal) ;
+     orel(_, Rule, Proven, Goal)).
 
-% Handling the assumption box
-helper(Prems, _, [Del | Rest], Bevisat) :-
-    Del = [FirstLine | T],
-    FirstLine = [_, _, assumption],
-    % Box  starts here
-    (T = [] ; 
-     append([FirstLine], Bevisat, TempBevisat),
-     helper(Prems, _, T, TempBevisat)), % Box ends here
-    append([Del], Bevisat, UpdatedBevisat),
-    helper(Prems, _, Rest, UpdatedBevisat).
 
-% Box predicate without Prems and Goal
-box(First, Last, Bevisat) :-
-    member([First|T], Bevisat),
-    last(T, Last).
 
-box(Line, Line, Bevisat) :-
-    member([Line], Bevisat).
+% Box checks if starts and ends with the given paramenters and if the box only contains one line
+box(First, Last, Proven) :-
+    (member([First|T], Proven), last(T, Last));
+    (First = Last, member([First], Proven)).
 
-% Now we define the specific rules directly in helper predicates:
+% RULES
 
 % Premise
-premise_rule(Prems, premise, Bevisat, A) :- 
+premise_rule(Prems, premise, _, A) :- 
     member(A, Prems).
 
 % ∧i
-andint(_, andint(X, Y), Bevisat, and(A, B)) :- 
-    member([X, A, _], Bevisat),
-    member([Y, B, _], Bevisat).
+andint(_, andint(X, Y), Proven, and(A, B)) :- 
+    member([X, A, _], Proven),
+    member([Y, B, _], Proven).
 
 % ∧e 1
-andel1(_, andel1(X),Bevisat, A) :- 
-    member([X, and(A, _), _], Bevisat).
+andel1(_, andel1(X),Proven, A) :- 
+    member([X, and(A, _), _], Proven).
 
 % ∧e 2
-andel2(Prems, andel2(X), Bevisat, A) :- 
-    member([X, and(_, A), _], Bevisat).
+andel2(_, andel2(X), Proven, A) :- 
+    member([X, and(_, A), _], Proven).
 
 % ¬e (A,¬A |- ⊥) Motsägelse
-negel(Prems, negel(X, Y), Bevisat, motsagelse) :- 
-    member([X, A, _], Bevisat),
-    member([Y, neg(A), _], Bevisat).
+negel(_, negel(X, Y), Proven, motsagelse) :- 
+    member([X, A, _], Proven),
+    member([Y, neg(A), _], Proven).
 
 % ¬i (A (assumption),....⊥ |- ¬A)
-negint(Prems, negint(X, Y), Bevisat, neg(A)) :- 
-    box([X, A, assumption], [Y, motsagelse, _], Bevisat).
+negint(_, negint(X, Y), Proven, neg(A)) :- 
+    box([X, A, assumption], [Y, motsagelse, _], Proven).
 
 % ⊥e (⊥ allows anything)
-contel(Prems, motsagelseel(X), Bevisat, _) :- 
-    member([X, motsagelse, _], Bevisat).
+contel(_, motsagelseel(X), Proven, _) :- 
+    member([X, motsagelse, _], Proven).
 
 
 % ¬¬i
-neg_neg_int(Prems, negnegint(X), Bevisat, neg(neg(A))) :- 
-    member([X, A, _], Bevisat).
+neg_neg_int(_, negnegint(X), Proven, neg(neg(A))) :- 
+    member([X, A, _], Proven).
 
 % ¬¬e (¬¬A = A)
-neg_neg_el(Prems, negnegel(X), Bevisat, A) :- 
-    member([X, neg(neg(A)), _], Bevisat).
+neg_neg_el(_, negnegel(X), Proven, A) :- 
+    member([X, neg(neg(A)), _], Proven).
 
 % Copy
-copy(Prems, copy(X), Bevisat, A) :- 
-    member([X, A, _], Bevisat).
+copy(_, copy(X), Proven, A) :- 
+    member([X, A, _], Proven).
 
 % MT (A-->B, not B |- not A)
-mt(Prems, mt(X, Y), Bevisat, neg(A)) :- 
-    member([X, imp(A, B), _], Bevisat),
-    member([Y, neg(B), _], Bevisat).
+mt(_, mt(X, Y), Proven, neg(A)) :- 
+    member([X, imp(A, B), _], Proven),
+    member([Y, neg(B), _], Proven).
 
 % PBC (Assume not A....⊥ |- A)
-pbc(Prems, pbc(X, Y), Bevisat, A) :- 
-    box([X, neg(A), assumption], [Y, motsagelse, _], Bevisat).
+pbc(_, pbc(X, Y), Proven, A) :- 
+    box([X, neg(A), assumption], [Y, motsagelse, _], Proven).
 
 % LEM
-lem(Prems, lem, Bevisat, or(A, neg(A))).
+lem(_, lem, _, or(A, neg(A))).
 
 % -->i (A (assumption),......,B |- A-->B)
-impint(Prems, impint(X, Y), Bevisat, imp(A, B)) :- 
-    box([X, A, assumption], [Y, B, _], Bevisat).
+impint(_, impint(X, Y), Proven, imp(A, B)) :- 
+    box([X, A, assumption], [Y, B, _], Proven).
 
 % -->e  (A, A-->B |- B)
-impel(Prems, impel(X, Y), Bevisat, B) :- 
-    member([X, A, _], Bevisat),
-    member([Y, imp(A, B), _], Bevisat).
+impel(_, impel(X, Y), Proven, B) :- 
+    member([X, A, _], Proven),
+    member([Y, imp(A, B), _], Proven).
 
 % ∨i 1
-orint1(Prems, orint1(X), Bevisat, or(A, _)) :- 
-    member([X, A, _], Bevisat).
+orint1(_, orint1(X), Proven, or(A, _)) :- 
+    member([X, A, _], Proven).
 
 % ∨i 2
-orint2(Prems, orint2(X), Bevisat, or(_, A)) :- 
-    member([X, A, _], Bevisat).
+orint2(_, orint2(X), Proven, or(_, A)) :- 
+    member([X, A, _], Proven).
 
 % ∨e assumption B leads to A and assumption C leads to A
-orel(Prems, orel(I, II, III, IV, V), Bevisat, A) :- 
-    member([I, or(B, C), _], Bevisat),
-    box([II, B, assumption], [III, A, _], Bevisat),
-    box([IV, C, assumption], [V, A, _], Bevisat).
+orel(_, orel(I, II, III, IV, V), Proven, A) :- 
+    member([I, or(B, C), _], Proven),
+    box([II, B, assumption], [III, A, _], Proven),
+    box([IV, C, assumption], [V, A, _], Proven).
