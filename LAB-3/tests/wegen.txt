@@ -1,0 +1,20 @@
+
+[[ce, [ia]],
+ [ia, [ia, ir, ps]],
+ [ir, [ir, ia, ce, ps]], 
+ [ps, [pc, ia, ir]], 
+ [pc, [ce]]].
+
+
+[[ce, [ro]],
+ [ia, [it]],   
+ [ir, [re]],  
+ [ps, [cb]],   
+ [pc, [pa]]].
+
+
+ps.
+
+
+ag(ef(ro)).
+

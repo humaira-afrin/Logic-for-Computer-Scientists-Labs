@@ -1,5 +1,6 @@
 :- discontiguous check/5.
 
+
 % For SICStus, uncomment line below: (needed for member/2)
 %:- use_module(library(lists)).
 % Load model, initial state and formula from file.
